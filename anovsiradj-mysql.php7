@@ -1,0 +1,79 @@
+<?php
+/**
+* MySQL Backward PHP7
+* using mysql_* functions in PHP7 using MySQLi-Class.
+* 
+* @author anovsiradj (Mayendra Costanov)
+* @date Min Des 18 11:22:35 WIB 2016
+*/
+
+Anovsiradj_MySQL::init();
+
+class Anovsiradj_MySQL
+{
+	private static $instance;
+	private $resource;
+	private $credential = [];
+
+	private function __construct() {}
+	public static function init()
+	{
+		if (!isset(self::$instance)) {
+			self::$instance = new Anovsiradj_MySQL;
+		}
+		return self::$instance;
+	}
+
+	private function newmysql()
+	{
+		/*
+		Object oriented style: 
+		mysqli::__construct ([string $host = ini_get("mysqli.default_host") [
+			, string $username = ini_get("mysqli.default_user") [
+				, string $passwd = ini_get("mysqli.default_pw") [
+					, string $dbname = "" [
+						, int $port = ini_get("mysqli.default_port") [
+							, string $socket = ini_get("mysqli.default_socket")
+						]
+					]
+				]
+			]
+		]])
+		*/
+		$this->resource = new mysqli($this->credential['svr'], $this->credential['usr'], $this->credential['pwd'], $this->credential['dbn']);
+		if (empty($this->resource->connect_error)) {
+			return true;
+		}
+		return false;
+	}
+
+	public function _connect($server, $username, $password)
+	{
+		$this->credential['svr'] = $server;
+		$this->credential['usr'] = $username;
+		$this->credential['pwd'] = $password;
+		return true; // always. need help!
+	}
+
+	public function _select_db($database_name)
+	{
+		$this->credential['dbn'] = $database_name;
+		return $this->newmysql();
+	}
+
+	public function _error()
+	{
+		if (isset($this->resource)) return $this->resource->connect_error;
+		return null;
+	}
+}
+
+// --------------------------------------------------
+$d = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'src';
+if ($handle = opendir($d)) {
+	while (false !== ($entry = readdir($handle))) {
+		if ($entry[0] === '.') continue;
+		require $d . DIRECTORY_SEPARATOR . $entry;
+	}
+	closedir($handle);
+}
